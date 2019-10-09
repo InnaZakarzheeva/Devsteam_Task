@@ -9,12 +9,14 @@ import {
     Modal,
     Text
 } from 'react-native';
+import {store} from '../store/store';
+import {add} from '../actions/actions';
+import {connect} from 'react-redux';
 
-export default class ImageGallery extends React.Component{
+class ImageGallery extends React.Component{
     state = {
         modalVisible: false,
-        modalImage: null,
-        img: []
+        modalImage: null
     }
 
     componentDidMount = () => {
@@ -24,21 +26,20 @@ export default class ImageGallery extends React.Component{
                 return response.json();
             }
             ).then(function(jsonData){
-                let urlsData = [];
                 jsonData.map(item => {
-                    urlsData.push({
-                        urls: item.urls.raw,
-                        name: item.user.name
-                    })
+                    // urlsData.push({
+                    //     urls: item.urls.raw,
+                    //     name: item.user.name
+                    // })
+                    store.dispatch(add(item.urls.raw, item.user.name));
                 })
-                    self.setState({img: urlsData});
-                    console.log(urlsData);
+                    console.log(self.props.img);
             });
     }
 
     setModalVisible = (visible, imgKey) => {
         this.setState({
-            modalImage: this.state.img[imgKey].urls
+            modalImage: this.props.img[imgKey].urls
         })
         this.setState({
             modalVisible: visible
@@ -62,7 +63,7 @@ export default class ImageGallery extends React.Component{
                             <Image source={{uri:this.state.modalImage}} style={styles.imagesFull}></Image>
                         </View>
                     </Modal>
-                    {this.state.img.map((item, key) => {
+                    {this.props.img.map((item, key) => {
                         return <TouchableWithoutFeedback key={key} onPress={() => {this.setModalVisible(true, key)}}>
                                     <View style={styles.imagewrap}>
                                         <Image source={{uri: item.urls}} style={styles.images}></Image>
@@ -75,6 +76,12 @@ export default class ImageGallery extends React.Component{
         )
     }
 }
+
+const mapStateToProps = (state) => {
+    return state
+}
+
+export default connect(mapStateToProps)(ImageGallery);
 
 const styles = StyleSheet.create({
     container: {
